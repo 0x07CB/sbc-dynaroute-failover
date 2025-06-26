@@ -13,24 +13,24 @@ function check_root() {
 
 check_root
 
-# Usage: ./ufw-init-configure.sh <wireless_interface> <ethernet_interface>
+# Usage: ./ufw-init-configure.sh <interface_principale> <interface_secours>
 if [[ $# -ne 2 ]]; then
-    echo "Usage: $0 <wireless_interface> <ethernet_interface>"
-    echo "Example: $0 wlan0 eth0"
+    echo "Usage: $0 <interface_principale> <interface_secours>"
+    echo "Example: $0 eth0 wlan0"
     exit 1
 fi
 
-# === DÉCLARATION DE L'INTERFACE CIBLE ===
-WIRELESS_INTERFACE="$1"
-ETHERNET_INTERFACE="$2"
+# === DÉCLARATION DES INTERFACES ===
+MAIN_IF="$1"
+BACKUP_IF="$2"
 
 # Vérification de l'existence des interfaces
-if ! ip link show "$WIRELESS_INTERFACE" &>/dev/null; then
-    echo "Wireless interface '$WIRELESS_INTERFACE' does not exist."
+if ! ip link show "$MAIN_IF" &>/dev/null; then
+    echo "L'interface principale '$MAIN_IF' n'existe pas."
     exit 1
 fi
-if ! ip link show "$ETHERNET_INTERFACE" &>/dev/null; then
-    echo "Ethernet interface '$ETHERNET_INTERFACE' does not exist."
+if ! ip link show "$BACKUP_IF" &>/dev/null; then
+    echo "L'interface de secours '$BACKUP_IF' n'existe pas."
     exit 1
 fi
 
@@ -48,31 +48,31 @@ ufw logging high
 
 # === RÈGLES SORTANTES POUR APT UNIQUEMENT ===
 
-# Bloquer les ports courants en sortie sur le Wi-Fi
-ufw deny out on "$WIRELESS_INTERFACE" to any port 53 proto udp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 80 proto tcp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 443 proto tcp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 22 proto tcp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 21 proto tcp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 25 proto tcp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 110 proto tcp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 143 proto tcp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 123 proto udp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 67 proto udp
-ufw deny out on "$WIRELESS_INTERFACE" to any port 161 proto udp
+# Bloquer les ports courants en sortie sur l'interface de secours
+ufw deny out on "$BACKUP_IF" to any port 53 proto udp
+ufw deny out on "$BACKUP_IF" to any port 80 proto tcp
+ufw deny out on "$BACKUP_IF" to any port 443 proto tcp
+ufw deny out on "$BACKUP_IF" to any port 22 proto tcp
+ufw deny out on "$BACKUP_IF" to any port 21 proto tcp
+ufw deny out on "$BACKUP_IF" to any port 25 proto tcp
+ufw deny out on "$BACKUP_IF" to any port 110 proto tcp
+ufw deny out on "$BACKUP_IF" to any port 143 proto tcp
+ufw deny out on "$BACKUP_IF" to any port 123 proto udp
+ufw deny out on "$BACKUP_IF" to any port 67 proto udp
+ufw deny out on "$BACKUP_IF" to any port 161 proto udp
 
-# Autoriser les mêmes ports en sortie sur l'Ethernet
-ufw allow out on "$ETHERNET_INTERFACE" to any port 53 proto udp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 80 proto tcp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 443 proto tcp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 22 proto tcp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 21 proto tcp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 25 proto tcp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 110 proto tcp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 143 proto tcp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 123 proto udp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 67 proto udp
-ufw allow out on "$ETHERNET_INTERFACE" to any port 161 proto udp
+# Autoriser les mêmes ports en sortie sur l'interface principale
+ufw allow out on "$MAIN_IF" to any port 53 proto udp
+ufw allow out on "$MAIN_IF" to any port 80 proto tcp
+ufw allow out on "$MAIN_IF" to any port 443 proto tcp
+ufw allow out on "$MAIN_IF" to any port 22 proto tcp
+ufw allow out on "$MAIN_IF" to any port 21 proto tcp
+ufw allow out on "$MAIN_IF" to any port 25 proto tcp
+ufw allow out on "$MAIN_IF" to any port 110 proto tcp
+ufw allow out on "$MAIN_IF" to any port 143 proto tcp
+ufw allow out on "$MAIN_IF" to any port 123 proto udp
+ufw allow out on "$MAIN_IF" to any port 67 proto udp
+ufw allow out on "$MAIN_IF" to any port 161 proto udp
 
 # === (OPTIONNEL) AUTORISER RETOUR DES PAQUETS DES CONNEXIONS ÉTABLIES ===
 # UFW gère déjà ça automatiquement
@@ -84,7 +84,7 @@ ufw allow out on "$ETHERNET_INTERFACE" to any port 161 proto udp
 # === RÈGLES SPÉCIFIQUES (À ADAPTER SELON VOS SERVICES) ===
 # Si un fichier ufw-custom-rules.sh existe, il sera exécuté ici pour appliquer des règles personnalisées.
 if [[ -f ./ufw-custom-rules.sh ]]; then
-    bash ./ufw-custom-rules.sh "$WIRELESS_INTERFACE" "$ETHERNET_INTERFACE"
+    bash ./ufw-custom-rules.sh "$MAIN_IF" "$BACKUP_IF"
 fi
 
 # === ACTIVER UFW ===
