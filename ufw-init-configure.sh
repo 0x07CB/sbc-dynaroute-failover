@@ -46,43 +46,10 @@ ufw default deny outgoing
 # === ACTIVER LES LOGS EN MODE VERBEUX ===
 ufw logging high
 
-# === RÈGLES SORTANTES POUR APT UNIQUEMENT ===
-
-# Bloquer les ports courants en sortie sur l'interface de secours
-ufw deny out on "$BACKUP_IF" to any port 53 proto udp
-ufw deny out on "$BACKUP_IF" to any port 80 proto tcp
-ufw deny out on "$BACKUP_IF" to any port 443 proto tcp
-ufw deny out on "$BACKUP_IF" to any port 22 proto tcp
-ufw deny out on "$BACKUP_IF" to any port 21 proto tcp
-ufw deny out on "$BACKUP_IF" to any port 25 proto tcp
-ufw deny out on "$BACKUP_IF" to any port 110 proto tcp
-ufw deny out on "$BACKUP_IF" to any port 143 proto tcp
-ufw deny out on "$BACKUP_IF" to any port 123 proto udp
-ufw deny out on "$BACKUP_IF" to any port 67 proto udp
-ufw deny out on "$BACKUP_IF" to any port 161 proto udp
-
-# Autoriser les mêmes ports en sortie sur l'interface principale
-ufw allow out on "$MAIN_IF" to any port 53 proto udp
-ufw allow out on "$MAIN_IF" to any port 80 proto tcp
-ufw allow out on "$MAIN_IF" to any port 443 proto tcp
-ufw allow out on "$MAIN_IF" to any port 22 proto tcp
-ufw allow out on "$MAIN_IF" to any port 21 proto tcp
-ufw allow out on "$MAIN_IF" to any port 25 proto tcp
-ufw allow out on "$MAIN_IF" to any port 110 proto tcp
-ufw allow out on "$MAIN_IF" to any port 143 proto tcp
-ufw allow out on "$MAIN_IF" to any port 123 proto udp
-ufw allow out on "$MAIN_IF" to any port 67 proto udp
-ufw allow out on "$MAIN_IF" to any port 161 proto udp
-
-# === (OPTIONNEL) AUTORISER RETOUR DES PAQUETS DES CONNEXIONS ÉTABLIES ===
-# UFW gère déjà ça automatiquement
-
-# === (OPTIONNEL) BLOQUER TOUT LE RESTE SUR CETTE INTERFACE ===
-# ufw deny in on "$WIRELESS_INTERFACE"
-# ufw deny out on "$WIRELESS_INTERFACE"
+# (Ne pas appliquer de règles de ports spécifiques ici)
+# La gestion dynamique des ports/services selon l'interface active doit être faite par le script check_network_and_ufw.sh
 
 # === RÈGLES SPÉCIFIQUES (À ADAPTER SELON VOS SERVICES) ===
-# Si un fichier ufw-custom-rules.sh existe, il sera exécuté ici pour appliquer des règles personnalisées.
 if [[ -f ./ufw-custom-rules.sh ]]; then
     bash ./ufw-custom-rules.sh "$MAIN_IF" "$BACKUP_IF"
 fi
